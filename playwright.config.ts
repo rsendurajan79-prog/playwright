@@ -46,7 +46,7 @@ export default defineConfig({
         video: 'retain-on-failure',
         actionTimeout: Number.parseInt(process.env.ACTION_TIMEOUT || '30000'),
         navigationTimeout: parseInt(process.env.NAVIGATION_TIMEOUT || '30000'),
-        headless: process.env.HEADLESS !== 'false',
+        headless: true,
         viewport: { width: 1280, height: 1500 },
         testIdAttribute: 'data-test',
         ignoreHTTPSErrors: true,
