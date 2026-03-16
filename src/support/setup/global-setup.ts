@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 
 async function globalSetup(config: FullConfig) {
-    const browser = await chromium.launch({ headless: false });
+    const browser = await chromium.launch({ headless: true });
 //     const { baseURL, storageState } = config.projects[0].use;
 //   const authFile = storageState as string;
 
