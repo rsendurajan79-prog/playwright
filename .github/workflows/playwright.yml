@@ -9,28 +9,32 @@ jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    # This is the "Magic" part:
+    container:
+      image: mcr.microsoft.com/playwright:v1.49.0-noble # Use the version matching your package.json
+    
     strategy:
       fail-fast: false
       matrix:
-        # SHARDING: Defines 4 parallel machines
         shardIndex: [1, 2, 3, 4]
         shardTotal: [4]
+        
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 18
-          
-      - name: Install dependencies
+
+      - name: Install JS dependencies
         run: npm ci
-      # CRITICAL STEP: Install Playwright Browsers
-      # This downloads the actual browser binaries (Chromium, etc.)
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
+
+      # NOTICE: NO 'npx playwright install' needed!
+      # The browsers are already inside the 'noble' image.
+
       - name: Run Playwright tests
         # WORKERS: Specified via --workers flag (2 per shard)
         # REPORTER: Use 'blob' to allow merging later
-        run: npx playwright test apitesting.spec.ts --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }} --workers=2 --reporter=blob
+        run: npx playwright test apitesting.spec.ts --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }} --workers=2 --reporter=blob --headed=false
         env:
           API_TOKEN: ${{ secrets.API_TOKEN }}
 
