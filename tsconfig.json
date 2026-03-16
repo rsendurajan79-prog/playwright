@@ -1,0 +1,43 @@
+{
+    "compilerOptions": {
+      "target": "ES2020",
+      "module": "ESNext",
+      "lib": ["ES2020", "DOM"],
+      "moduleResolution": "node",
+      "strict": true,
+      "esModuleInterop": true,
+      "skipLibCheck": true,
+      "forceConsistentCasingInFileNames": true,
+      "resolveJsonModule": true,
+      "allowSyntheticDefaultImports": true,
+      "sourceMap": true,
+      "incremental": true,
+      "baseUrl": "./",
+      "paths": {
+        "@support/*": ["src/support/*"],
+        "@fixtures/*": ["src/fixtures/*"],
+        "@helpers/*": ["src/support/helpers/*"],
+        "@constants/*": ["src/support/constants/*"],
+        "@Locators/*": ["src/support/locators/*"],
+        "@commands/*": ["src/support/custom-commands/*"],
+        "@business-functions/*": ["src/support/business-functions/*"],
+        "@setup/*": ["src/support/setup/*"]
+      },
+      "types": ["node", "@playwright/test"],
+      "experimentalDecorators": true,
+      "emitDecoratorMetadata": true
+    },
+    "include": [
+      "src/**/*.ts",
+      "playwright.config.ts",
+      "playwright.epp.config.ts"
+    ],
+    "exclude": [
+      "node_modules",
+      "dist",
+      "test-results",
+      "playwright-report*",
+      "allure-results*"
+    ]
+  }
+  

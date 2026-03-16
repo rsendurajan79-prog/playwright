@@ -1,0 +1,115 @@
+name: Playwright Regression
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # SHARDING: Defines 4 parallel machines
+        shardIndex: [1, 2, 3, 4]
+        shardTotal: [4]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Playwright tests
+        # WORKERS: Specified via --workers flag (2 per shard)
+        # REPORTER: Use 'blob' to allow merging later
+        run: npx playwright test --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }} --workers=2 --reporter=blob
+        env:
+          API_TOKEN: ${{ secrets.API_TOKEN }}
+
+      - name: Upload blob report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: all-blob-reports-${{ matrix.shardIndex }}
+          path: blob-report/
+          retention-days: 1
+
+  merge-reports:
+    # This job runs only after all shards finish
+    if: always()
+    needs: [test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+      
+      - name: Download all blobs
+        uses: actions/download-artifact@v4
+        with:
+          path: all-blobs
+          pattern: all-blob-reports-*
+          merge-multiple: true
+
+      - name: Merge Reports
+        run: npx playwright merge-reports ./all-blobs --reporter=html
+
+      - name: Upload Final HTML Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-html-report
+          path: playwright-report/
+
+      # WEBEX / TEAMS NOTIFICATION
+      - name: Send Rich Teams Notification
+        if: always()
+        run: |
+          # Determine color and status text
+          if [ "${{ job.status }}" == "success" ]; then
+            COLOR="2EB67D" # Green
+            STATUS_EMOJI="✅"
+          else
+            COLOR="E01E5A" # Red
+            STATUS_EMOJI="❌"
+          fi
+
+          curl -X POST -H "Content-Type: application/json" \
+          -d "{
+            'type': 'message',
+            'attachments': [{
+              'contentType': 'application/vnd.microsoft.card.adaptive',
+              'content': {
+                'type': 'AdaptiveCard',
+                'version': '1.2',
+                'body': [
+                  {
+                    'type': 'TextBlock',
+                    'text': '$STATUS_EMOJI Playwright Test Results',
+                    'weight': 'Bolder',
+                    'size': 'Medium'
+                  },
+                  {
+                    'type': 'FactSet',
+                    'facts': [
+                      { 'title': 'Status:', 'value': '${{ job.status }}' },
+                      { 'title': 'Repository:', 'value': '${{ github.repository }}' },
+                      { 'title': 'Branch:', 'value': '${{ github.ref_name }}' },
+                      { 'title': 'Total Shards:', 'value': '4' },
+                      { 'title': 'Workers per Shard:', 'value': '2' }
+                    ]
+                  }
+                ],
+                'actions': [
+                  {
+                    'type': 'Action.OpenUrl',
+                    'title': 'View Full HTML Report',
+                    'url': 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+                  }
+                ]
+              }
+            }]
+          }" ${{ secrets.TEAMS_WEBHOOK_URL }}
