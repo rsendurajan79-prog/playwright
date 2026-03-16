@@ -23,8 +23,10 @@ jobs:
           
       - name: Install dependencies
         run: npm ci
-      - name: Install playwright 
-        run: npm playwright install
+      # CRITICAL STEP: Install Playwright Browsers
+      # This downloads the actual browser binaries (Chromium, etc.)
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
       - name: Run Playwright tests
         # WORKERS: Specified via --workers flag (2 per shard)
         # REPORTER: Use 'blob' to allow merging later
