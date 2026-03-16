@@ -264,7 +264,7 @@ test('verify API response matches UI value', async ({ page }) => {
 //src\fixtures\latency.fixture.ts
 
 //different Params like Query , path and form parametrs
-test.fixme('verify API response with different parameters', async ({ page }) => {
+test('verify API response with different parameters', async ({ page }) => {
   //form parameter
   const response = await page.request.post('https://jsonplaceholder.typicode.com/posts', {
     form: {
@@ -431,7 +431,7 @@ test('intercept & update value for the original', async ({ page }) => {
   // 4. Assertion to ensure it actually worked
   expect(res.name).toBe("POST Mocked Name");
 })
-test.only('API CRUD operation working API ',async({page,request})=>{
+test('API CRUD operation working API ',async({page,request})=>{
 
   await page.setExtraHTTPHeaders({
     'x-api-key': '0d719000-0e5a-4a82-91d3-99b07d4ab50e'
