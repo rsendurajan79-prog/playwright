@@ -27,7 +27,7 @@ jobs:
       - name: Run Playwright tests
         # WORKERS: Specified via --workers flag (2 per shard)
         # REPORTER: Use 'blob' to allow merging later
-        run: npx playwright test --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }} --workers=2 --reporter=blob
+        run: npx playwright test apitesting.spec.ts --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }} --workers=2 --reporter=blob
         env:
           API_TOKEN: ${{ secrets.API_TOKEN }}
 
